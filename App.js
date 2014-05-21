@@ -76,8 +76,8 @@
 				
 				_onDataLoaded: function(storyStore, storyData, featureStore, featureData) {
                     var records = [];
-					var kanbanToScrum = []
-					kanbanToScrum['None'] = 'Needs Definition'
+					var kanbanToScrum = [];
+					kanbanToScrum.None = 'Needs Definition';
 					kanbanToScrum['Defined'] = 'Defined';
 					kanbanToScrum['Analysis/Design'] = 'In-Progress';
 					kanbanToScrum['Design verified'] =  'In-Progress';
