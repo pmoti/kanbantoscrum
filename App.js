@@ -78,12 +78,12 @@
                     var records = [];
 					var kanbanToScrum = [];
 					kanbanToScrum.None = 'Needs Definition';
-					kanbanToScrum['Defined'] = 'Defined';
+					kanbanToScrum.Defined = 'Defined';
 					kanbanToScrum['Analysis/Design'] = 'In-Progress';
 					kanbanToScrum['Design verified'] =  'In-Progress';
-					kanbanToScrum['Coding'] =  'In-Progress';
-					kanbanToScrum['Done'] =  'Completed';
-					kanbanToScrum['Accepted'] =  'Accepted';
+					kanbanToScrum.Coding =  'In-Progress';
+					kanbanToScrum.Done =  'Completed';
+					kanbanToScrum.Accepted =  'Accepted';
 					
 					console.log(kanbanToScrum);
                     Ext.Array.each(storyData, function(record) {
