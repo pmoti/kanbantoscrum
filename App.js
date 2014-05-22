@@ -5,7 +5,9 @@
                 launch: function() {
 				
 					console.log("Our first App");
-										
+					var updateSchedulState = false; 
+					var recordsToUpdate;
+					
 					var store = Ext.create('Rally.data.wsapi.Store', {
 						model: 'User Story',
 						autoLoad: true,
@@ -61,21 +63,104 @@
                         }
                     });
 				},
-
-				/*_loadGrid: function(myStore, fieldConfig)	 {
-					var myGrid = Ext.create('Rally.ui.grid.Grid', {
-						store: myStore,
-						columnCfgs: [
-							'FormattedID',fieldConfig.dataIndex, 'Feature', 'Project', 'Release', 'Name'
-						]
-					});
-					
-					console.log('my grid', myGrid);	
-					this.add(myGrid);
-				},	*/
 				
 				_onDataLoaded: function(storyStore, storyData, featureStore, featureData) {
                     var records = [];
+					var recordMap = {};
+					
+                    Ext.Array.each(storyData, function(record) {
+                        //Perform custom actions with the data here
+                        //Calculations, etc.
+						var initiativeName = "";
+						console.log(record);
+						var feature = record.get('Feature');
+						if (feature) {
+							feature = featureStore.findRecord('FormattedID', feature.FormattedID);
+							if (feature) {
+								if (feature.data.Parent) {
+									initiativeName = feature.data.Parent.Name;
+								}
+								var id = feature.data.FormattedID;
+								var name = feature.data.Name;
+								var project = (feature.data.Project)?feature.data.Project.Name:"";
+								var state = (feature.data.State)?feature.data.State.Name:"";
+								
+								console.log("Feature ", feature);
+								if (recordMap.hasOwnProperty(id)) {
+									val = recordMap[id];
+									val.StoryCount++;
+									val.CompletedStories += (kanbanState=="Accepted")?1:0;
+									
+									val.PctDoneStoryCount = (val.CompletedStories/val.StoryCount * 100).toFixed(0);
+									
+								} else {
+									kanbanState = record.get('c_KanbanStateCE');
+									
+									var completedStories = (kanbanState=="Accepted")?1:0;
+									var pctComplete = completedStories * 100;
+									var customrec = {
+										FeatureId: id,
+										Name: name,
+										PctDoneStoryCount: pctComplete,
+										InitiativeName: initiativeName,
+										Project: project,
+										State: state,
+										StoryCount: 1,
+										CompletedStories: completedStories
+									};
+									recordMap[id] = customrec;
+									records.push(customrec);
+								}
+							}
+							
+							
+						}
+						
+						
+						if (this.updateScheduleState) {
+							this._updateScheduleState(record);
+							storyStore.sync({
+								success: function(batch, options) {
+									console.log("Success!");
+								},
+								failure: function(batch, options) {
+									console.log("Success!");
+								}
+							});				
+						}
+						
+						/*customrec = {
+							FormattedID: record.get('FormattedID'),
+                            ScheduleState: record.get('ScheduleState'),
+							c_KanbanStateCE: record.get('c_KanbanStateCE'),
+                            Name: record.get('Name'),
+							Feature: featureName,
+							Initiative: initiativeName,
+                            Tasks: record.get('Tasks').length,
+                            Defects: record.get('Defects').length,
+							Notes: record.get('Notes')
+                        }*/
+						
+                        /*records.push({
+							FormattedID: record.get('FormattedID'),
+                            ScheduleState: record.get('ScheduleState'),
+							c_KanbanStateCE: record.get('c_KanbanStateCE'),
+                            Name: record.get('Name'),
+							Feature: featureName,
+							Initiative: initiativeName,
+                            Tasks: record.get('Tasks').length,
+                            Defects: record.get('Defects').length,
+							Notes: record.get('Notes')
+                        });*/
+						
+						
+                    });
+					
+					this._loadGrid(records,storyData.length);
+					
+				},
+				
+				_updateScheduleState: function(record) {
 					var kanbanToScrum = [];
 					kanbanToScrum.None = 'Needs Definition';
 					kanbanToScrum.Defined = 'Defined';
@@ -86,83 +171,61 @@
 					kanbanToScrum.Accepted =  'Accepted';
 					
 					console.log(kanbanToScrum);
-                    Ext.Array.each(storyData, function(record) {
-                        //Perform custom actions with the data here
-                        //Calculations, etc.
-						var initiativeName = "";
-						var featureName = "";
-						console.log(record);
-						feature = record.get('Feature');
-						if (feature) {
-							featureId = record.get('Feature').FormattedID;
-							featureName = feature.Name;
-							feature = featureStore.query('FormattedID', featureId);
-							
-							if (feature.get(0) && feature.get(0).data.Parent) {
-								initiativeName = feature.get(0).data.Parent.Name;
-							}
-						}
-						
-						if (record.get('c_KanbanStateCE')) {
-							newSchedState = kanbanToScrum[record.get('c_KanbanStateCE')];
-							if (newSchedState != record.get('ScheduleState')) {
-								record.beginEdit();
-								record.set('ScheduleState', newSchedState);	
-								record.set('Notes', newSchedState);	
+					if (record.get('c_KanbanStateCE')) {
+						newSchedState = kanbanToScrum[record.get('c_KanbanStateCE')];
+						if (newSchedState != record.get('ScheduleState')) {
+							record.beginEdit();
+							record.set('ScheduleState', newSchedState);	
+							record.set('Notes', newSchedState);	
 
-								record.endEdit();
-								//record.commit();
-								record.save({
-									callback: function(records,operation,success) {
-										console.log("Records: ", records);
-										console.log("Operation: ", operation);
-										console.log("Success: ", success);
-									}
-								});
-								console.log('Story: ', record.get('Name'), ' State:', record.get('c_KanbanStateCE'),  ' : ', newSchedState, record.get('ScheduleState'));
-							}
-						}				
-                        records.push({
-							FormattedID: record.get('FormattedID'),
-                            ScheduleState: record.get('ScheduleState'),
-							c_KanbanStateCE: record.get('c_KanbanStateCE'),
-                            Name: record.get('Name'),
-							Feature: featureName,
-							Initiative: initiativeName,
-                            Tasks: record.get('Tasks').length,
-                            Defects: record.get('Defects').length,
-							Notes: record.get('Notes')
-                        });
-                    });
-					
-					storyStore.sync({
-						success: function(batch, options) {
-							console.log("Success!");
-						},
-						failure: function(batch, options) {
-							console.log("Success!");
+							record.endEdit();
+							//record.commit();
+							record.save({
+								callback: function(records,operation,success) {
+									console.log("Records: ", records);
+									console.log("Operation: ", operation);
+									console.log("Success: ", success);
+								}
+							});
+							console.log('Story: ', record.get('Name'), ' State:', record.get('c_KanbanStateCE'),  ' : ', newSchedState, record.get('ScheduleState'));
 						}
-					});
-					/*Rally.data.BulkRecordUpdater.updateRecords( {
-						records: updateStateStories,
-						propertiesToUpdate: {
-							Notes: kanbanToScrum[
-						},
-						success: function(readOnlyRecords) {
-							console.log("Could Not Update: ", readOnlyRecords);
-						}
-						scope: this
-					});*/
-						
-						
-						
-                    this.add({
+					}									
+				},
+			
+				_loadGrid: function(records, length) {
+						console.log("Records: ", records);
+				        this.add({
                         xtype: 'rallygrid',
                         store: Ext.create('Rally.data.custom.Store', {
                             data: records,
-							pageSize: storyData.length
+							pageSize: length
                         }),
-                        columnCfgs: [
+						columnCfgs: [
+							{
+								text: 'ID', dataIndex: 'FeatureId'
+							},
+							{
+								text: 'Name', dataIndex: 'Name'
+							},
+							{
+								text: '% Done by Story Count', dataIndex: 'PctDoneStoryCount'
+							},
+							{
+								text: '% Done by Plan Estimate', dataIndex: 'PctDoneStoryCount'
+							},
+							{
+								text: 'Parent', dataIndex: 'InitiativeName'
+							},
+							{
+								text: 'Project', dataIndex: 'Project'
+							},
+							{
+								text: 'State', dataIndex: 'State'
+							},
+							{
+								text: 'Stories', dataIndex: 'StoryCount'
+							}
+                        /*columnCfgs: [
 							{
 								text: 'FormattedID', dataIndex: 'FormattedID'
 							},
@@ -189,10 +252,10 @@
                             },
 							{
 								text: 'Notes', dataIndex: 'Notes'
-							}
+							}*/
                         ]
                     });
-				
-			
+
 				}
+			
 			});
