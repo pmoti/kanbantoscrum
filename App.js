@@ -10,7 +10,7 @@
 					
 					Ext.create('Ext.Container', {
 						items: [{
-							xtype: 'rallyreleasecombobox',
+							xtype: 'rallyreleasecombobox'
 						}],
 						renderTo: Ext.getBody().dom
 					});
