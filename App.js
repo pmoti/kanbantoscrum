@@ -8,6 +8,13 @@
 					var updateSchedulState = false; 
 					var recordsToUpdate;
 					
+					Ext.create('Ext.Container', {
+						items: [{
+							xtype: 'rallyreleasecombobox',
+						}],
+						renderTo: Ext.getBody().dom
+					});
+					
 					var store = Ext.create('Rally.data.wsapi.Store', {
 						model: 'User Story',
 						autoLoad: true,
@@ -17,12 +24,12 @@
 							property: 'Project.Name',
 							operator: '=',
 							value: 'CE Kanban'
-							}/*,
+							},
 							{
 							property: 'Release.Name',
 							operator: '=',
 							value: '14Q2'
-							}*/
+							}
 						],
 						listeners: {
 							load: function(myStore, myData, success) {
@@ -88,16 +95,23 @@
 								console.log("Feature ", feature);
 								if (recordMap.hasOwnProperty(id)) {
 									val = recordMap[id];
-									val.StoryCount++;
-									val.CompletedStories += (kanbanState=="Accepted")?1:0;
+									val.data.StoryCount++;
+									val.data.CompletedStories += (kanbanState=="Accepted")?1:0;
 									
-									val.PctDoneStoryCount = (val.CompletedStories/val.StoryCount * 100).toFixed(0);
+									val.data.PctDoneStoryCount = (val.data.CompletedStories/val.data.StoryCount * 100).toFixed(0);
 									
 								} else {
 									kanbanState = record.get('c_KanbanStateCE');
 									
 									var completedStories = (kanbanState=="Accepted")?1:0;
 									var pctComplete = completedStories * 100;
+									feature.data.PctDoneStoryCount = pctComplete;
+									feature.data.StoryCount = 1;
+									feature.data.CompletedStories = completedStories;
+									feature.data.ProjName = project;
+									feature.data.StateName = state;
+									feature.data.InitName = initiativeName;
+									
 									var customrec = {
 										FeatureId: id,
 										Name: name,
@@ -108,8 +122,8 @@
 										StoryCount: 1,
 										CompletedStories: completedStories
 									};
-									recordMap[id] = customrec;
-									records.push(customrec);
+									recordMap[id] = feature;
+									records.push(feature);
 								}
 							}
 							
@@ -202,7 +216,7 @@
                         }),
 						columnCfgs: [
 							{
-								text: 'ID', dataIndex: 'FeatureId'
+								text: 'ID', dataIndex: 'FormattedID'
 							},
 							{
 								text: 'Name', dataIndex: 'Name'
@@ -214,13 +228,13 @@
 								text: '% Done by Plan Estimate', dataIndex: 'PctDoneStoryCount'
 							},
 							{
-								text: 'Parent', dataIndex: 'InitiativeName'
+								text: 'Parent', dataIndex: 'InitName'
 							},
 							{
-								text: 'Project', dataIndex: 'Project'
+								text: 'Project', dataIndex: 'ProjName'
 							},
 							{
-								text: 'State', dataIndex: 'State'
+								text: 'State', dataIndex: 'StateName'
 							},
 							{
 								text: 'Stories', dataIndex: 'StoryCount'
