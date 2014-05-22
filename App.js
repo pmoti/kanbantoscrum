@@ -8,13 +8,6 @@
 					var updateSchedulState = false; 
 					var recordsToUpdate;
 					
-					Ext.create('Ext.Container', {
-						items: [{
-							xtype: 'rallyreleasecombobox'
-						}],
-						renderTo: Ext.getBody().dom
-					});
-					
 					var store = Ext.create('Rally.data.wsapi.Store', {
 						model: 'User Story',
 						autoLoad: true,
@@ -44,8 +37,36 @@
 							},
 							scope: this
 						}
-					});					
+					});
+					this.add({
+						xtype: 'rallyreleasecombobox',
+						valueField: '_refObjectName',
+						listeners: {
+							change: function(newValue, oldValue, eOpts) {
+								if (newValue != oldValue) {
+									store.clearFilter(true);
+									store.filter([
+										{							
+										property: 'Project.Name',
+										operator: '=',
+										value: 'CE Kanban'
+										},
+										{
+										property: 'Release.Name',
+										operator: '=',
+										value: newValue.value}
+									]);
+								
+								}
+							},
+							scope: this
+						
+						}
+						
+					});
 				},
+					
+
 				
 				_loadInitiativeStore: function(storyStore, storyData) {
 					var featidfilters = Ext.create('Rally.data.wsapi.Filter', { property: 'FormattedID', operator: '=', value: '0'});
@@ -219,7 +240,7 @@
 								text: 'ID', dataIndex: 'FormattedID'
 							},
 							{
-								text: 'Name', dataIndex: 'Name'
+								text: 'Name', dataIndex: 'Name', flex: 1
 							},
 							{
 								text: '% Done by Story Count', dataIndex: 'PctDoneStoryCount'
