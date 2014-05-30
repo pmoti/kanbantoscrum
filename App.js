@@ -347,8 +347,35 @@
 					}					
 				},
 				
+				
+				
+				
 				_loadStoryGrid: function(storyStore, length) {
+				
+				
+					var rowTpl = new Ext.XTemplate(
+						'<table style="border:1px solid black">',
+						'<tpl for=".">',
+							'<tr style="border:1px solid black">',
+								'<td>{Feature.Name}</td>',
+								'<td>{FormattedID}</td>',
+								'<td>{Name}</td>',
+							'</tr>',
+							'<tr style="border:1px solid black">',
+								'<td colspan=3>{Description}</td>',
+							'</tr/>',
+						'</tpl>',
+						'</table>'
+					);
+
 					this.down("#storyGrid").add({
+						xtype: 'dataview',
+						store: storyStore,
+						scope: this,
+						tpl: rowTpl,
+						emptyText: ''
+					});
+					/*this.down("#storyGrid").add({
 						xtype: 'rallygrid',
 						store: storyStore,
 						scope: this,
@@ -367,7 +394,7 @@
 							},
 							{
 								text: 'Schedule State', dataIndex: 'ScheduleState'
-							},*/
+							},
 							{
 								text: 'Description', dataIndex: 'Description', flex: 1
 							}/*,
@@ -376,7 +403,7 @@
 							},
 							{
 								text: 'Tasks', dataIndex: 'Tasks'
-							}*/
+							}
 						],
 						listeners: {
 							add: function(component, idx , eOpt ) {
@@ -385,7 +412,7 @@
 							},
 							scope: this
 						}
-                    });
+                    });*/
 
 				}
 								
