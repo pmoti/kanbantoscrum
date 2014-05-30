@@ -248,16 +248,6 @@
 					
 					this._setupStoryGrid(storyStore);
 				},
-				
-				_setupFeatureGrid: function(records,length) {
-					if (this._grid) {
-						console.log("Updating Grid");
-						this._loadGrid(records,length);
-					} else {
-						console.log("Loading Grid");
-						this._loadGrid(records,length);
-					}					
-				},
 					
 				_updateScheduleState: function(record) {
 					var kanbanToScrum = [];
@@ -291,17 +281,14 @@
 					}									
 				},
 				
-				_updateGrid: function(records, length) {
-					console.log("Records: ", records);
-					
-					var store = Ext.create('Rally.data.custom.Store', {
-                            data: records,
-							pageSize: length
-                        });
-					
-					this._grid.store = store;
-					//this._grid.clearValue();
-					//this._grid.bindStore(store);
+				_setupFeatureGrid: function(records,length) {
+					if (this._grid) {
+						console.log("Updating Grid");
+						this._loadGrid(records,length);
+					} else {
+						console.log("Loading Grid");
+						this._loadGrid(records,length);
+					}					
 				},
 			
 				_loadGrid: function(records, length) {
@@ -312,6 +299,7 @@
 							data: records,
 							pageSize: length
 						}),
+						scope: this,
 						columnCfgs: [
 							{
 								text: 'ID', dataIndex: 'FormattedID'
@@ -350,7 +338,6 @@
 				},
 				
 				_setupStoryGrid: function(store) {
-				
 					if (this._storyGrid) {
 						console.log("Updating Grid");
 						this._loadStoryGrid(store);
@@ -360,11 +347,6 @@
 					}					
 				},
 				
-				_updateStoryGrid: function(store) {
-					this._storyGrid.clearValue();
-					this._storyGrid.bindStore(store);
-				},
-			
 				_loadStoryGrid: function(storyStore, length) {
 					this.down("#storyGrid").add({
 						xtype: 'rallygrid',
@@ -405,9 +387,9 @@
 						}
                     });
 
-				},
+				}
 								
-				_loadKanbanCFD: function() {
+/*				_loadKanbanCFD: function() {
 					stateFieldValues = ['None', 'Defined', 'Analysis/Design', 'Design verified', 'Coding', 'Done', 'Accepted'];
 					Ext.define('My.CFDCalculator', {
 						extend: 'Rally.data.lookback.calculator.TimeSeriesCalculator',
@@ -472,7 +454,7 @@
 								console.log("Data?: ", data);
 								console.log("Success: ", success);
 							 }
-						 },*/
+						 },
 
 						 calculatorType: 'My.CFDCalculator',
 						 calculatorConfig: {},
@@ -512,6 +494,6 @@
 				
 				
 				
-				}
+				}*/
 			
 			});
